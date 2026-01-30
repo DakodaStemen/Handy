@@ -72,6 +72,7 @@ fn create_client(provider: &PostProcessProvider, api_key: &str) -> Result<reqwes
     let headers = build_headers(provider, api_key)?;
     reqwest::Client::builder()
         .default_headers(headers)
+        .timeout(std::time::Duration::from_secs(30)) // 30 second timeout to prevent hanging
         .build()
         .map_err(|e| format!("Failed to build HTTP client: {}", e))
 }

@@ -164,3 +164,97 @@ pub fn initialize_enigo(app: AppHandle) -> Result<(), String> {
         }
     }
 }
+
+/// Test post-processing on arbitrary input text.
+/// Returns the processed text if successful.
+#[specta::specta]
+#[tauri::command]
+pub async fn test_post_process(app: AppHandle, input_text: String) -> Result<String, String> {
+    use crate::settings::{APPLE_INTELLIGENCE_PROVIDER_ID};
+
+    let settings = get_settings(&app);
+
+    if !settings.post_process_enabled {
+        return Err("Post-processing is disabled. Please enable it first.".to_string());
+    }
+
+    let provider = settings
+        .active_post_process_provider()
+        .cloned()
+        .ok_or_else(|| "No post-processing provider is selected.".to_string())?;
+
+    let model = settings
+        .post_process_models
+        .get(&provider.id)
+        .cloned()
+        .unwrap_or_default();
+
+    if model.trim().is_empty() {
+        return Err(format!(
+            "No model configured for provider '{}'.",
+            provider.label
+        ));
+    }
+
+    let selected_prompt_id = settings
+        .post_process_selected_prompt_id
+        .clone()
+        .ok_or_else(|| "No prompt is selected.".to_string())?;
+
+    let prompt = settings
+        .post_process_prompts
+        .iter()
+        .find(|p| p.id == selected_prompt_id)
+        .ok_or_else(|| format!("Selected prompt '{}' not found.", selected_prompt_id))?;
+
+    if prompt.prompt.trim().is_empty() {
+        return Err("The selected prompt is empty.".to_string());
+    }
+
+    // Replace ${output} variable in the prompt with the input text
+    let processed_prompt = prompt.prompt.replace("${output}", &input_text);
+
+    // Handle Apple Intelligence separately
+    if provider.id == APPLE_INTELLIGENCE_PROVIDER_ID {
+        #[cfg(all(target_os = "macos", target_arch = "aarch64"))]
+        {
+            if !crate::apple_intelligence::check_apple_intelligence_availability() {
+                return Err("Apple Intelligence is not available on this device.".to_string());
+            }
+
+            let token_limit = model.trim().parse::<i32>().unwrap_or(0);
+            return crate::apple_intelligence::process_text(&processed_prompt, token_limit)
+                .map_err(|e| format!("Apple Intelligence error: {}", e));
+        }
+
+        #[cfg(not(all(target_os = "macos", target_arch = "aarch64")))]
+        {
+            return Err(
+                "Apple Intelligence is only available on Apple silicon Macs.".to_string(),
+            );
+        }
+    }
+
+    let api_key = settings
+        .post_process_api_keys
+        .get(&provider.id)
+        .cloned()
+        .unwrap_or_default();
+
+    // Send the chat completion request
+    match crate::llm_client::send_chat_completion(&provider, api_key, &model, processed_prompt)
+        .await
+    {
+        Ok(Some(content)) => {
+            // Strip invisible Unicode characters that some LLMs may insert
+            let content = content
+                .replace('\u{200B}', "") // Zero-Width Space
+                .replace('\u{200C}', "") // Zero-Width Non-Joiner
+                .replace('\u{200D}', "") // Zero-Width Joiner
+                .replace('\u{FEFF}', ""); // Byte Order Mark
+            Ok(content)
+        }
+        Ok(None) => Err("LLM returned an empty response.".to_string()),
+        Err(e) => Err(format!("LLM request failed: {}", e)),
+    }
+}

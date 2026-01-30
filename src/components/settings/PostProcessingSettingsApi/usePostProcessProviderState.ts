@@ -27,6 +27,7 @@ type PostProcessProviderState = {
   handleModelSelect: (value: string) => void;
   handleModelCreate: (value: string) => void;
   handleRefreshModels: () => void;
+  isKeylessProvider: boolean;
 };
 
 const APPLE_PROVIDER_ID = "apple_intelligence";
@@ -69,10 +70,19 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
   const model = settings?.post_process_models?.[selectedProviderId] ?? "";
 
   const providerOptions = useMemo<DropdownOption[]>(() => {
-    return providers.map((provider) => ({
-      value: provider.id,
-      label: provider.label,
-    }));
+    return providers
+      .map((provider) => ({
+        value: provider.id,
+        label: provider.label,
+      }))
+      .sort((a, b) => {
+        if (a.value === "custom") return 1;
+        if (b.value === "custom") return -1;
+        // Optionally put Apple Intelligence first
+        if (a.value === APPLE_PROVIDER_ID) return -1;
+        if (b.value === APPLE_PROVIDER_ID) return 1;
+        return 0;
+      });
   }, [providers]);
 
   const handleProviderSelect = useCallback(
@@ -99,7 +109,7 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
 
   const handleBaseUrlChange = useCallback(
     (value: string) => {
-      if (!selectedProvider || selectedProvider.id !== "custom") {
+      if (!selectedProvider || !selectedProvider.allow_base_url_edit) {
         return;
       }
       const trimmed = value.trim();
@@ -187,6 +197,9 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
   );
 
   const isCustomProvider = selectedProvider?.id === "custom";
+  const isKeylessProvider = ["lm_studio", "custom", APPLE_PROVIDER_ID].includes(
+    selectedProviderId,
+  );
 
   // No automatic fetching - user must click refresh button
 
@@ -213,5 +226,6 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
     handleModelSelect,
     handleModelCreate,
     handleRefreshModels,
+    isKeylessProvider,
   };
 };

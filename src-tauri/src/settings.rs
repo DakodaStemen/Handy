@@ -315,6 +315,8 @@ pub struct AppSettings {
     pub experimental_enabled: bool,
     #[serde(default)]
     pub keyboard_implementation: KeyboardImplementation,
+    #[serde(default)]
+    pub post_process_custom_models: HashMap<String, Vec<String>>,
 }
 
 fn default_model() -> String {
@@ -448,6 +450,15 @@ fn default_post_process_providers() -> Vec<PostProcessProvider> {
         });
     }
 
+    // LM Studio provider
+    providers.push(PostProcessProvider {
+        id: "lm_studio".to_string(),
+        label: "LM Studio".to_string(),
+        base_url: "http://localhost:1234/v1".to_string(),
+        allow_base_url_edit: true,
+        models_endpoint: Some("/models".to_string()),
+    });
+
     // Custom provider always comes last
     providers.push(PostProcessProvider {
         id: "custom".to_string(),
@@ -487,11 +498,18 @@ fn default_post_process_models() -> HashMap<String, String> {
 }
 
 fn default_post_process_prompts() -> Vec<LLMPrompt> {
-    vec![LLMPrompt {
-        id: "default_improve_transcriptions".to_string(),
-        name: "Improve Transcriptions".to_string(),
-        prompt: "Clean this transcript:\n1. Fix spelling, capitalization, and punctuation errors\n2. Convert number words to digits (twenty-five → 25, ten percent → 10%, five dollars → $5)\n3. Replace spoken punctuation with symbols (period → ., comma → ,, question mark → ?)\n4. Remove filler words (um, uh, like as filler)\n5. Keep the language in the original version (if it was french, keep it in french for example)\n\nPreserve exact meaning and word order. Do not paraphrase or reorder content.\n\nReturn only the cleaned transcript.\n\nTranscript:\n${output}".to_string(),
-    }]
+    vec![
+        LLMPrompt {
+            id: "default_improve_transcriptions".to_string(),
+            name: "Improve Transcriptions".to_string(),
+            prompt: "Clean this transcript:\n1. Fix spelling, capitalization, and punctuation errors\n2. Convert number words to digits (twenty-five → 25, ten percent → 10%, five dollars → $5)\n3. Replace spoken punctuation with symbols (period → ., comma → ,, question mark → ?)\n4. Remove filler words (um, uh, like as filler)\n5. Keep the language in the original version (if it was french, keep it in french for example)\n\nPreserve exact meaning and word order. Do not paraphrase or reorder content.\n\nReturn only the cleaned transcript.\n\nTranscript:\n${output}".to_string(),
+        },
+        LLMPrompt {
+            id: "beautiful_prompts".to_string(),
+            name: "Beautiful Prompts".to_string(),
+            prompt: "Refine this transcribed text into a clear, professional, and well-structured prompt for an AI image generator or LLM. Remove filler words and stutters while preserving the core artistic or functional intent.\n\nOriginal: ${output}\n\nBeautiful Prompt:".to_string(),
+        },
+    ]
 }
 
 fn ensure_post_process_defaults(settings: &mut AppSettings) -> bool {
@@ -527,6 +545,18 @@ fn ensure_post_process_defaults(settings: &mut AppSettings) -> bool {
                     .insert(provider.id.clone(), default_model);
                 changed = true;
             }
+        }
+    }
+
+    // Ensure default prompts exist
+    for prompt in default_post_process_prompts() {
+        if settings
+            .post_process_prompts
+            .iter()
+            .all(|existing| existing.id != prompt.id)
+        {
+            settings.post_process_prompts.push(prompt);
+            changed = true;
         }
     }
 
@@ -605,6 +635,7 @@ pub fn get_default_settings() -> AppSettings {
         app_language: default_app_language(),
         experimental_enabled: false,
         keyboard_implementation: KeyboardImplementation::default(),
+        post_process_custom_models: HashMap::new(),
     }
 }
 

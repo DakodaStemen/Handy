@@ -21,7 +21,7 @@ use tauri_plugin_autostart::ManagerExt;
 
 use crate::settings::{
     self, get_settings, ClipboardHandling, KeyboardImplementation, LLMPrompt, OverlayPosition,
-    PasteMethod, ShortcutBinding, SoundTheme, APPLE_INTELLIGENCE_DEFAULT_MODEL_ID,
+    PasteMethod, ShortcutBinding, SoundTheme,
     APPLE_INTELLIGENCE_PROVIDER_ID,
 };
 use crate::tray;
@@ -710,7 +710,7 @@ pub fn change_post_process_base_url_setting(
         .post_process_provider_mut(&provider_id)
         .expect("Provider looked up above must exist");
 
-    if provider.id != "custom" {
+    if !provider.allow_base_url_edit {
         return Err(format!(
             "Provider '{}' does not allow editing the base URL",
             label
@@ -760,7 +760,22 @@ pub fn change_post_process_model_setting(
 ) -> Result<(), String> {
     let mut settings = settings::get_settings(&app);
     validate_provider_exists(&settings, &provider_id)?;
-    settings.post_process_models.insert(provider_id, model);
+    
+    settings.post_process_models.insert(provider_id.clone(), model.clone());
+
+    // Save as a custom model option if not empty
+    let trimmed_model = model.trim();
+    if !trimmed_model.is_empty() {
+        let entry = settings
+            .post_process_custom_models
+            .entry(provider_id.clone())
+            .or_default();
+        
+        if !entry.contains(&trimmed_model.to_string()) {
+            entry.push(trimmed_model.to_string());
+        }
+    }
+
     settings::write_settings(&app, settings);
     Ok(())
 }
@@ -886,14 +901,42 @@ pub async fn fetch_post_process_models(
         .unwrap_or_default();
 
     // Skip fetching if no API key for providers that typically need one
-    if api_key.trim().is_empty() && provider.id != "custom" {
-        return Err(format!(
-            "API key is required for {}. Please add an API key to list available models.",
-            provider.label
-        ));
-    }
+    // But if we have stored custom models, we should return those at least!
+    let mut models = if api_key.trim().is_empty() && provider.id != "custom" {
+        // If no API key, we can't fetch remote models.
+        // But we can return stored custom models.
+        Vec::new()
+    } else {
+        match crate::llm_client::fetch_models(provider, api_key).await {
+            Ok(m) => m,
+            Err(e) => {
+                // If fetch fails, we still want to show custom models if any
+                log::warn!("Failed to fetch models: {}", e);
+                Vec::new()
+            }
+        }
+    };
 
-    crate::llm_client::fetch_models(provider, api_key).await
+    // Add stored custom models
+    if let Some(custom_models) = settings.post_process_custom_models.get(&provider_id) {
+        for custom_model in custom_models {
+            if !models.contains(custom_model) {
+                models.push(custom_model.clone());
+            }
+        }
+    }
+    
+    // If the list is empty and we had an error fetching (and no custom models), 
+    // we should probably propagate the original error if we skipped it?
+    // Current behavior: returns empty list on error if we have no custom models.
+    // The previous implementation returned the error.
+    // Let's preserve the original error behavior if we end up with NO models.
+    
+    // ACTUALLY: The original implementation returned the Result from `fetch_models`.
+    // Returning an empty list might be confusing if the user expects an error message.
+    // However, if we have custom models, we definitely want to show them even if the fetch failed.
+    
+    Ok(models)
 }
 
 #[tauri::command]

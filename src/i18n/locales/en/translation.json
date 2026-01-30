@@ -241,9 +241,13 @@
     },
     "postProcessing": {
       "title": "Post Process",
+      "enable": {
+        "title": "Enable Post Processing",
+        "description": "Enable AI-powered text refinement after transcription"
+      },
       "disabledNotice": "Post processing is currently disabled. Enable it in Debug settings to configure.",
       "api": {
-        "title": "API (OpenAI Compatible)",
+        "title": "API",
         "provider": {
           "title": "Provider",
           "description": "Select an OpenAI-compatible provider."
@@ -295,6 +299,20 @@
         "cancel": "Cancel",
         "selectToEdit": "Select a prompt above to view and edit its details.",
         "createFirst": "Click 'Create New Prompt' above to create your first post-processing prompt."
+      },
+      "test": {
+        "title": "Test",
+        "description": "Test your post-processing with sample text",
+        "inputLabel": "Input",
+        "inputPlaceholder": "Enter sample transcription text here...",
+        "runTest": "Run Test",
+        "cancel": "Cancel",
+        "running": "Processing...",
+        "output": "Output",
+        "noOutput": "Run a test to see the output",
+        "copy": "Copy",
+        "copied": "✓ Copied",
+        "completedIn": "Completed in {{time}}"
       }
     },
     "history": {
