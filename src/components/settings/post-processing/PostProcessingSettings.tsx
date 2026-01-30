@@ -72,7 +72,7 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
                   layout="horizontal"
                   grouped={true}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full">
                     <BaseUrlField
                       value={state.baseUrl}
                       onBlur={state.handleBaseUrlChange}
@@ -80,7 +80,7 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
                         "settings.postProcessing.api.baseUrl.placeholder",
                       )}
                       disabled={state.isBaseUrlUpdating}
-                      className="min-w-[380px]"
+                      className="flex-1 w-full"
                     />
                   </div>
                 </SettingContainer>
@@ -94,7 +94,7 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
                   layout="horizontal"
                   grouped={true}
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-2 w-full">
                     <ApiKeyField
                       value={state.apiKey}
                       onBlur={state.handleApiKeyChange}
@@ -102,7 +102,7 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
                         "settings.postProcessing.api.apiKey.placeholder",
                       )}
                       disabled={state.isApiKeyUpdating}
-                      className="min-w-[320px]"
+                      className="flex-1 w-full"
                     />
                   </div>
                 </SettingContainer>
@@ -122,7 +122,7 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
               layout="stacked"
               grouped={true}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 w-full">
                 <ModelSelect
                   value={state.model}
                   options={state.modelOptions}
@@ -138,7 +138,7 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
                   onSelect={state.handleModelSelect}
                   onCreate={state.handleModelCreate}
                   onBlur={() => { }}
-                  className="flex-1 min-w-[380px]"
+                  className="flex-1 w-full"
                 />
                 <ResetButton
                   onClick={state.handleRefreshModels}
@@ -667,14 +667,14 @@ export const PostProcessingSettings: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="max-w-4xl w-full mx-auto space-y-4">
+    <div className="w-full mx-auto space-y-3 px-1">
       {/* API Settings - Compact */}
       <SettingsGroup title={t("settings.postProcessing.api.title")}>
         <PostProcessingSettingsApi />
       </SettingsGroup>
 
-      {/* Prompt & Test - Side by side for better space usage */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      {/* Prompt & Test - Responsive grid: stacked on small, side-by-side on medium+ */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
         <SettingsGroup title={t("settings.postProcessing.prompts.title")}>
           <PostProcessingSettingsPrompts />
         </SettingsGroup>
