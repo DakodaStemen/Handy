@@ -35,94 +35,69 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
   const state = usePostProcessProviderState();
 
   return (
-    <>
+    <div className="space-y-2">
       <PostProcessingToggle descriptionMode="tooltip" grouped={true} />
 
       {state.enabled && (
         <>
-          <SettingContainer
-            title={t("settings.postProcessing.api.provider.title")}
-            description={t("settings.postProcessing.api.provider.description")}
-            descriptionMode="tooltip"
-            layout="horizontal"
-            grouped={true}
-          >
-            <div className="flex items-center gap-2">
+          {/* Provider & Base URL in a row */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold flex items-center gap-1">
+                {t("settings.postProcessing.api.provider.title")}
+              </label>
               <ProviderSelect
                 options={state.providerOptions}
                 value={state.selectedProviderId}
                 onChange={state.handleProviderSelect}
               />
             </div>
-          </SettingContainer>
 
-          {state.isAppleProvider ? (
-            state.appleIntelligenceUnavailable ? (
-              <Alert variant="error" contained>
-                {t("settings.postProcessing.api.appleIntelligence.unavailable")}
-              </Alert>
-            ) : null
-          ) : (
-            <>
-              {state.selectedProvider?.allow_base_url_edit && (
-                <SettingContainer
-                  title={t("settings.postProcessing.api.baseUrl.title")}
-                  description={t("settings.postProcessing.api.baseUrl.description")}
-                  descriptionMode="tooltip"
-                  layout="horizontal"
-                  grouped={true}
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    <BaseUrlField
-                      value={state.baseUrl}
-                      onBlur={state.handleBaseUrlChange}
-                      placeholder={t(
-                        "settings.postProcessing.api.baseUrl.placeholder",
-                      )}
-                      disabled={state.isBaseUrlUpdating}
-                      className="flex-1 w-full"
-                    />
-                  </div>
-                </SettingContainer>
-              )}
+            {!state.isAppleProvider && state.selectedProvider?.allow_base_url_edit && (
+              <div className="flex flex-col gap-1">
+                <label className="text-xs font-semibold">
+                  {t("settings.postProcessing.api.baseUrl.title")}
+                </label>
+                <BaseUrlField
+                  value={state.baseUrl}
+                  onBlur={state.handleBaseUrlChange}
+                  placeholder={t("settings.postProcessing.api.baseUrl.placeholder")}
+                  disabled={state.isBaseUrlUpdating}
+                  className="w-full"
+                />
+              </div>
+            )}
+          </div>
 
-              {!state.isKeylessProvider && (
-                <SettingContainer
-                  title={t("settings.postProcessing.api.apiKey.title")}
-                  description={t("settings.postProcessing.api.apiKey.description")}
-                  descriptionMode="tooltip"
-                  layout="horizontal"
-                  grouped={true}
-                >
-                  <div className="flex items-center gap-2 w-full">
-                    <ApiKeyField
-                      value={state.apiKey}
-                      onBlur={state.handleApiKeyChange}
-                      placeholder={t(
-                        "settings.postProcessing.api.apiKey.placeholder",
-                      )}
-                      disabled={state.isApiKeyUpdating}
-                      className="flex-1 w-full"
-                    />
-                  </div>
-                </SettingContainer>
-              )}
-            </>
+          {state.isAppleProvider && state.appleIntelligenceUnavailable && (
+            <Alert variant="error" contained>
+              {t("settings.postProcessing.api.appleIntelligence.unavailable")}
+            </Alert>
           )}
 
+          {/* API Key - only if needed */}
+          {!state.isAppleProvider && !state.isKeylessProvider && (
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold">
+                {t("settings.postProcessing.api.apiKey.title")}
+              </label>
+              <ApiKeyField
+                value={state.apiKey}
+                onBlur={state.handleApiKeyChange}
+                placeholder={t("settings.postProcessing.api.apiKey.placeholder")}
+                disabled={state.isApiKeyUpdating}
+                className="w-full"
+              />
+            </div>
+          )}
+
+          {/* Model selector - compact row */}
           {!state.isAppleProvider && (
-            <SettingContainer
-              title={t("settings.postProcessing.api.model.title")}
-              description={
-                state.isCustomProvider
-                  ? t("settings.postProcessing.api.model.descriptionCustom")
-                  : t("settings.postProcessing.api.model.descriptionDefault")
-              }
-              descriptionMode="tooltip"
-              layout="stacked"
-              grouped={true}
-            >
-              <div className="flex items-center gap-2 w-full">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold">
+                {t("settings.postProcessing.api.model.title")}
+              </label>
+              <div className="flex items-center gap-2">
                 <ModelSelect
                   value={state.model}
                   options={state.modelOptions}
@@ -130,32 +105,30 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
                   isLoading={state.isFetchingModels}
                   placeholder={
                     state.modelOptions.length > 0
-                      ? t(
-                        "settings.postProcessing.api.model.placeholderWithOptions",
-                      )
+                      ? t("settings.postProcessing.api.model.placeholderWithOptions")
                       : t("settings.postProcessing.api.model.placeholderNoOptions")
                   }
                   onSelect={state.handleModelSelect}
                   onCreate={state.handleModelCreate}
                   onBlur={() => { }}
-                  className="flex-1 w-full"
+                  className="flex-1"
                 />
                 <ResetButton
                   onClick={state.handleRefreshModels}
                   disabled={state.isFetchingModels}
                   ariaLabel={t("settings.postProcessing.api.model.refreshModels")}
-                  className="flex h-10 w-10 items-center justify-center"
+                  className="flex h-8 w-8 items-center justify-center"
                 >
                   <RefreshCcw
                     className={`h-4 w-4 ${state.isFetchingModels ? "animate-spin" : ""}`}
                   />
                 </ResetButton>
               </div>
-            </SettingContainer>
+            </div>
           )}
         </>
       )}
-    </>
+    </div>
   );
 };
 
@@ -465,6 +438,7 @@ const PostProcessingTestComponent: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const abortControllerRef = React.useRef<AbortController | null>(null);
   const timerRef = React.useRef<NodeJS.Timeout | null>(null);
+  const outputRef = React.useRef<HTMLDivElement | null>(null);
 
   // Track settings that affect test output
   const providerId = getSetting("post_process_provider_id");
@@ -506,6 +480,11 @@ const PostProcessingTestComponent: React.FC = () => {
     setError(null);
     setOutputText("");
     setCopied(false);
+
+    // Scroll output to top so loading spinner is visible
+    if (outputRef.current) {
+      outputRef.current.scrollTop = 0;
+    }
 
     try {
       const result = await commands.testPostProcess(inputText);
@@ -598,6 +577,7 @@ const PostProcessingTestComponent: React.FC = () => {
           )}
         </div>
         <div
+          ref={outputRef}
           className="p-3 rounded-lg border border-mid-gray/20 whitespace-pre-wrap text-sm min-h-[80px] max-h-[120px] bg-white dark:bg-neutral-800 overflow-auto"
           role="status"
           aria-live="polite"
