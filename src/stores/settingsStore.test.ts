@@ -64,6 +64,6 @@ describe('SettingsStore', () => {
 
         const settings = useSettingsStore.getState().settings
         expect(settings?.post_process_providers).toHaveLength(3)
-        expect(settings?.post_process_providers.find(p => p.id === 'lm_studio')?.label).toBe('LM Studio')
+        expect(settings?.post_process_providers?.find(p => p.id === 'lm_studio')?.label).toBe('LM Studio')
     })
 })
