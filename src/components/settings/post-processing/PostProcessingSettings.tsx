@@ -282,7 +282,7 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
       layout="stacked"
       grouped={true}
     >
-      <div className="space-y-3">
+      <div className="space-y-2">
         <div className="flex gap-2">
           <Dropdown
             selectedValue={selectedPromptId || null}
@@ -304,7 +304,7 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
           <Button
             onClick={handleStartCreate}
             variant="primary"
-            size="md"
+            size="sm"
             disabled={isCreating}
           >
             {t("settings.postProcessing.prompts.createNew")}
@@ -312,9 +312,9 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
         </div>
 
         {!isCreating && hasPrompts && selectedPrompt && (
-          <div className="space-y-3">
-            <div className="space-y-2 flex flex-col">
-              <label className="text-sm font-semibold">
+          <div className="space-y-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold">
                 {t("settings.postProcessing.prompts.promptLabel")}
               </label>
               <Input
@@ -328,14 +328,16 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
               />
             </div>
 
-            <div className="space-y-2 flex flex-col">
-              <label className="text-sm font-semibold">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold">
                 {t("settings.postProcessing.prompts.promptInstructions")}
               </label>
               <Textarea
                 value={draftText}
                 onChange={(e) => setDraftText(e.target.value)}
                 autoGrow={true}
+                rows={4}
+                className="min-h-[100px] max-h-[150px] text-sm"
                 placeholder={t(
                   "settings.postProcessing.prompts.promptInstructionsPlaceholder",
                 )}
@@ -348,11 +350,11 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
               />
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-2">
               <Button
                 onClick={handleUpdatePrompt}
                 variant="primary"
-                size="md"
+                size="sm"
                 disabled={!draftName.trim() || !draftText.trim() || !isDirty}
               >
                 {t("settings.postProcessing.prompts.updatePrompt")}
@@ -360,7 +362,7 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
               <Button
                 onClick={() => handleDeletePrompt(selectedPromptId)}
                 variant="secondary"
-                size="md"
+                size="sm"
                 disabled={!selectedPromptId || prompts.length <= 1}
               >
                 {t("settings.postProcessing.prompts.deletePrompt")}
@@ -370,8 +372,8 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
         )}
 
         {!isCreating && !selectedPrompt && (
-          <div className="p-3 bg-mid-gray/5 rounded border border-mid-gray/20">
-            <p className="text-sm text-mid-gray">
+          <div className="p-2 bg-mid-gray/5 rounded border border-mid-gray/20">
+            <p className="text-xs text-mid-gray">
               {hasPrompts
                 ? t("settings.postProcessing.prompts.selectToEdit")
                 : t("settings.postProcessing.prompts.createFirst")}
@@ -380,9 +382,9 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
         )}
 
         {isCreating && (
-          <div className="space-y-3">
-            <div className="space-y-2 block flex flex-col">
-              <label className="text-sm font-semibold text-text">
+          <div className="space-y-2">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold text-text">
                 {t("settings.postProcessing.prompts.promptLabel")}
               </label>
               <Input
@@ -396,14 +398,16 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
               />
             </div>
 
-            <div className="space-y-2 flex flex-col">
-              <label className="text-sm font-semibold">
+            <div className="flex flex-col gap-1">
+              <label className="text-xs font-semibold">
                 {t("settings.postProcessing.prompts.promptInstructions")}
               </label>
               <Textarea
                 value={draftText}
                 onChange={(e) => setDraftText(e.target.value)}
                 autoGrow={true}
+                rows={4}
+                className="min-h-[100px] max-h-[150px] text-sm"
                 placeholder={t(
                   "settings.postProcessing.prompts.promptInstructionsPlaceholder",
                 )}
@@ -416,11 +420,11 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
               />
             </div>
 
-            <div className="flex gap-2 pt-2">
+            <div className="flex gap-2">
               <Button
                 onClick={handleCreatePrompt}
                 variant="primary"
-                size="md"
+                size="sm"
                 disabled={!draftName.trim() || !draftText.trim()}
               >
                 {t("settings.postProcessing.prompts.createPrompt")}
@@ -428,7 +432,7 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
               <Button
                 onClick={handleCancelCreate}
                 variant="secondary"
-                size="md"
+                size="sm"
               >
                 {t("settings.postProcessing.prompts.cancel")}
               </Button>
@@ -550,78 +554,69 @@ const PostProcessingTestComponent: React.FC = () => {
 
   return (
     <div
-      className="space-y-4 p-5 rounded-xl border border-mid-gray/20 bg-gradient-to-br from-white to-gray-50 dark:from-dark-gray dark:to-neutral-900 shadow-sm"
+      className="space-y-3 p-4 rounded-xl border border-mid-gray/20 bg-gradient-to-br from-white to-gray-50 dark:from-dark-gray dark:to-neutral-900 shadow-sm"
       role="region"
       aria-label={t("settings.postProcessing.test.title")}
     >
-      {/* Side-by-side input/output layout */}
-      <div className="flex gap-5">
-        {/* Input side */}
-        <div className="flex-1 flex flex-col">
-          <label
-            htmlFor="test-input"
-            className="text-sm font-semibold mb-2 text-neutral-700 dark:text-neutral-300"
-          >
-            {t("settings.postProcessing.test.inputLabel")}
-          </label>
-          <Textarea
-            id="test-input"
-            value={inputText}
-            onChange={(e) => setInputText(e.target.value)}
-            placeholder={t("settings.postProcessing.test.inputPlaceholder")}
-            autoGrow={true}
-            rows={5}
-            className="flex-1 min-h-[160px] transition-shadow focus:shadow-md"
-            aria-describedby="test-description"
-          />
-          <p id="test-description" className="sr-only">
-            {t("settings.postProcessing.test.description")}
-          </p>
-        </div>
+      {/* Input */}
+      <div className="flex flex-col">
+        <label
+          htmlFor="test-input"
+          className="text-xs font-semibold mb-1.5 text-neutral-700 dark:text-neutral-300"
+        >
+          {t("settings.postProcessing.test.inputLabel")}
+        </label>
+        <Textarea
+          id="test-input"
+          value={inputText}
+          onChange={(e) => setInputText(e.target.value)}
+          placeholder={t("settings.postProcessing.test.inputPlaceholder")}
+          autoGrow={true}
+          rows={3}
+          className="min-h-[80px] text-sm transition-shadow focus:shadow-md"
+          aria-describedby="test-description"
+        />
+        <p id="test-description" className="sr-only">
+          {t("settings.postProcessing.test.description")}
+        </p>
+      </div>
 
-        {/* Output side */}
-        <div className="flex-1 flex flex-col">
-          <div className="flex items-center justify-between mb-2">
-            <label className="text-sm font-semibold text-neutral-700 dark:text-neutral-300">
-              {t("settings.postProcessing.test.output")}
-            </label>
-            {outputText && (
-              <button
-                onClick={handleCopyOutput}
-                className="text-xs px-2 py-1 rounded-md bg-mid-gray/10 hover:bg-mid-gray/20 transition-colors text-mid-gray"
-                aria-label="Copy output to clipboard"
-              >
-                {copied ? t("settings.postProcessing.test.copied") : t("settings.postProcessing.test.copy")}
-              </button>
-            )}
-          </div>
-          <div
-            className="flex-1 p-4 rounded-lg border border-mid-gray/20 whitespace-pre-wrap text-sm min-h-[160px] bg-white dark:bg-neutral-800 overflow-auto"
-            role="status"
-            aria-live="polite"
-            aria-busy={isRunning}
-          >
-            {isRunning ? (
-              <div className="flex flex-col items-center justify-center h-full gap-3">
-                {/* Spinner */}
-                <div className="relative">
-                  <div className="w-8 h-8 border-2 border-mid-gray/20 border-t-pink-500 rounded-full animate-spin" />
-                </div>
-                <span className="text-mid-gray text-sm">
-                  {t("settings.postProcessing.test.running")}
-                </span>
-                <span className="text-xs text-mid-gray/70 font-mono">
-                  {formatTime(elapsedTime)}
-                </span>
-              </div>
-            ) : outputText ? (
-              <span className="text-neutral-800 dark:text-neutral-200">{outputText}</span>
-            ) : (
-              <span className="text-mid-gray/60 italic">
-                {t("settings.postProcessing.test.noOutput")}
+      {/* Output */}
+      <div className="flex flex-col">
+        <div className="flex items-center justify-between mb-1.5">
+          <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+            {t("settings.postProcessing.test.output")}
+          </label>
+          {outputText && (
+            <button
+              onClick={handleCopyOutput}
+              className="text-xs px-2 py-0.5 rounded bg-mid-gray/10 hover:bg-mid-gray/20 transition-colors text-mid-gray"
+              aria-label="Copy output to clipboard"
+            >
+              {copied ? t("settings.postProcessing.test.copied") : t("settings.postProcessing.test.copy")}
+            </button>
+          )}
+        </div>
+        <div
+          className="p-3 rounded-lg border border-mid-gray/20 whitespace-pre-wrap text-sm min-h-[80px] max-h-[120px] bg-white dark:bg-neutral-800 overflow-auto"
+          role="status"
+          aria-live="polite"
+          aria-busy={isRunning}
+        >
+          {isRunning ? (
+            <div className="flex items-center justify-center h-full gap-2">
+              <div className="w-5 h-5 border-2 border-mid-gray/20 border-t-pink-500 rounded-full animate-spin" />
+              <span className="text-mid-gray text-xs">
+                {t("settings.postProcessing.test.running")} {formatTime(elapsedTime)}
               </span>
-            )}
-          </div>
+            </div>
+          ) : outputText ? (
+            <span className="text-neutral-800 dark:text-neutral-200">{outputText}</span>
+          ) : (
+            <span className="text-mid-gray/60 italic text-xs">
+              {t("settings.postProcessing.test.noOutput")}
+            </span>
+          )}
         </div>
       </div>
 
@@ -632,15 +627,15 @@ const PostProcessingTestComponent: React.FC = () => {
         </Alert>
       )}
 
-      {/* Action buttons */}
-      <div className="flex items-center gap-3">
+      {/* Action buttons - Compact */}
+      <div className="flex items-center gap-2">
         <Button
           onClick={handleRunTest}
           variant="primary"
-          size="md"
+          size="sm"
           disabled={isRunning || !inputText.trim()}
           aria-busy={isRunning}
-          className="min-w-[100px] transition-all hover:shadow-md"
+          className="transition-all hover:shadow-md"
         >
           {t("settings.postProcessing.test.runTest")}
         </Button>
@@ -649,15 +644,14 @@ const PostProcessingTestComponent: React.FC = () => {
           <Button
             onClick={handleCancel}
             variant="secondary"
-            size="md"
-            className="transition-all"
+            size="sm"
           >
             {t("settings.postProcessing.test.cancel")}
           </Button>
         )}
 
         {!isRunning && elapsedTime > 0 && outputText && (
-          <span className="text-xs text-mid-gray ml-2">
+          <span className="text-xs text-mid-gray">
             {t("settings.postProcessing.test.completedIn", { time: formatTime(elapsedTime) })}
           </span>
         )}
@@ -673,18 +667,22 @@ export const PostProcessingSettings: React.FC = () => {
   const { t } = useTranslation();
 
   return (
-    <div className="max-w-3xl w-full mx-auto space-y-6">
+    <div className="max-w-4xl w-full mx-auto space-y-4">
+      {/* API Settings - Compact */}
       <SettingsGroup title={t("settings.postProcessing.api.title")}>
         <PostProcessingSettingsApi />
       </SettingsGroup>
 
-      <SettingsGroup title={t("settings.postProcessing.prompts.title")}>
-        <PostProcessingSettingsPrompts />
-      </SettingsGroup>
+      {/* Prompt & Test - Side by side for better space usage */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <SettingsGroup title={t("settings.postProcessing.prompts.title")}>
+          <PostProcessingSettingsPrompts />
+        </SettingsGroup>
 
-      <SettingsGroup title={t("settings.postProcessing.test.title")}>
-        <PostProcessingTest />
-      </SettingsGroup>
+        <SettingsGroup title={t("settings.postProcessing.test.title")}>
+          <PostProcessingTest />
+        </SettingsGroup>
+      </div>
     </div>
   );
 };
