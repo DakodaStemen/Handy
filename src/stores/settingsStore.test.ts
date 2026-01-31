@@ -7,6 +7,7 @@ vi.mock('@/bindings', () => ({
     commands: {
         getAppSettings: vi.fn(),
         getDefaultSettings: vi.fn(),
+        checkCustomSounds: vi.fn(),
     }
 }))
 
@@ -32,6 +33,8 @@ describe('SettingsStore', () => {
         commands.getAppSettings.mockResolvedValue(mockSettings)
         // @ts-ignore
         commands.getDefaultSettings.mockResolvedValue(mockSettings)
+        // @ts-ignore
+        commands.checkCustomSounds.mockResolvedValue({ start: false, stop: false })
 
         const store = useSettingsStore.getState()
         await store.initialize()
@@ -58,6 +61,8 @@ describe('SettingsStore', () => {
         commands.getAppSettings.mockResolvedValue(mockSettings)
         // @ts-ignore
         commands.getDefaultSettings.mockResolvedValue(mockSettings)
+        // @ts-ignore
+        commands.checkCustomSounds.mockResolvedValue({ start: false, stop: false })
 
         const store = useSettingsStore.getState()
         await store.initialize()
