@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { RefreshCcw } from "lucide-react";
+import { toast } from "sonner";
 import { commands } from "@/bindings";
 
 import { Alert } from "../../ui/Alert";
@@ -167,6 +168,10 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
     if (!promptId) return;
     updateSetting("post_process_selected_prompt_id", promptId);
     setIsCreating(false);
+    const promptName = prompts.find(p => p.id === promptId)?.name;
+    if (promptName) {
+      toast.success(`Active Prompt: ${promptName}`);
+    }
   };
 
   const handleCreatePrompt = async () => {
@@ -286,20 +291,7 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
 
         {!isCreating && hasPrompts && selectedPrompt && (
           <div className="space-y-2">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold">
-                {t("settings.postProcessing.prompts.promptLabel")}
-              </label>
-              <Input
-                type="text"
-                value={draftName}
-                onChange={(e) => setDraftName(e.target.value)}
-                placeholder={t(
-                  "settings.postProcessing.prompts.promptLabelPlaceholder",
-                )}
-                variant="compact"
-              />
-            </div>
+
 
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold">

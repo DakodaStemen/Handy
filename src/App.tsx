@@ -40,6 +40,7 @@ function App() {
   useEffect(() => {
     if (onboardingStep === "done" && !hasCompletedPostOnboardingInit.current) {
       hasCompletedPostOnboardingInit.current = true;
+      console.log("Initializing Enigo...");
       commands.initializeEnigo().catch((e) => {
         console.warn("Failed to initialize Enigo:", e);
       });

@@ -206,6 +206,7 @@ fn type_text_via_xdotool(text: &str) -> Result<(), String> {
 }
 
 /// Type text directly via dotool (works on both Wayland and X11 via uinput).
+/// Handles multi-line text by using Shift+Enter to avoid submitting prompts.
 #[cfg(target_os = "linux")]
 fn type_text_via_dotool(text: &str) -> Result<(), String> {
     use std::io::Write;
@@ -217,9 +218,20 @@ fn type_text_via_dotool(text: &str) -> Result<(), String> {
         .map_err(|e| format!("Failed to spawn dotool: {}", e))?;
 
     if let Some(mut stdin) = child.stdin.take() {
-        // dotool uses "type <text>" command
-        writeln!(stdin, "type {}", text)
-            .map_err(|e| format!("Failed to write to dotool stdin: {}", e))?;
+        // Split text by newlines and type each line separately
+        // Use Shift+Enter between lines to insert soft newlines (avoids submitting forms/prompts)
+        let lines: Vec<&str> = text.split('\n').collect();
+        for (i, line) in lines.iter().enumerate() {
+            if !line.is_empty() {
+                writeln!(stdin, "type {}", line)
+                    .map_err(|e| format!("Failed to write to dotool stdin: {}", e))?;
+            }
+            // Add Shift+Enter between lines (not after the last line)
+            if i < lines.len() - 1 {
+                writeln!(stdin, "key shift+Return")
+                    .map_err(|e| format!("Failed to write key to dotool stdin: {}", e))?;
+            }
+        }
     }
 
     let output = child
