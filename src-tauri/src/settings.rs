@@ -397,6 +397,13 @@ fn default_post_process_provider_id() -> String {
 fn default_post_process_providers() -> Vec<PostProcessProvider> {
     let mut providers = vec![
         PostProcessProvider {
+            id: "gemini".to_string(),
+            label: "Gemini".to_string(),
+            base_url: "https://generativelanguage.googleapis.com/v1beta/openai/".to_string(),
+            allow_base_url_edit: false,
+            models_endpoint: Some("/models".to_string()),
+        },
+        PostProcessProvider {
             id: "openai".to_string(),
             label: "OpenAI".to_string(),
             base_url: "https://api.openai.com/v1".to_string(),
@@ -498,54 +505,25 @@ fn default_post_process_models() -> HashMap<String, String> {
 fn default_post_process_prompts() -> Vec<LLMPrompt> {
     vec![
         LLMPrompt {
-            id: "default_improve_transcriptions".to_string(),
-            name: "Improve Transcriptions".to_string(),
-            prompt: "Clean this transcript:\n1. Fix spelling, capitalization, and punctuation errors\n2. Convert number words to digits (twenty-five → 25, ten percent → 10%, five dollars → $5)\n3. Replace spoken punctuation with symbols (period → ., comma → ,, question mark → ?)\n4. Remove filler words (um, uh, like as filler)\n5. Keep the language in the original version (if it was french, keep it in french for example)\n\nPreserve exact meaning and word order. Do not paraphrase or reorder content.\n\nReturn only the cleaned transcript.\n\nTranscript:\n${output}".to_string(),
-        },
-        LLMPrompt {
             id: "beautiful_prompts".to_string(),
             name: "Beautiful Prompts".to_string(),
-            prompt: "Refine this transcribed text into a clear, professional, and well-structured prompt for an AI image generator or LLM. Remove filler words and stutters while preserving the core artistic or functional intent.\n\nOriginal: ${output}\n\nBeautiful Prompt:".to_string(),
+            prompt: "Refine this transcribed text into a clear, professional, and well-structured prompt for an AI image generator or LLM. Remove filler words and stutters while preserving the core functional intent. Only send back the refined text, no extra content.
+
+${output}".to_string(),
         },
         LLMPrompt {
             id: "everyday_messaging".to_string(),
             name: "Everyday Messaging".to_string(),
-            prompt: "You are a helpful assistant that rewrites text into clean, casual messages or emails.\n\nInstructions:\n1. Fix grammar, punctuation, and capitalization.\n2. Remove stutters, filler words (um, uh, like), and false starts.\n3. Keep the tone natural and conversational.\n4. CRITICAL: Do NOT add any preamble, conversational filler, or your own commentary (e.g. \"Here is the cleaned text\"). Return ONLY the refined text.\n5. Do NOT verify facts or hallucinate new information. Stick strictly to the provided content.\n\nInput Text:\n\"\"\"\n${output}\n\"\"\"".to_string(),
+            prompt: "Rewrite this transcribed text into a clean, casual message. Fix grammar, punctuation, and capitalization. Remove stutters and filler words while keeping the tone natural and conversational. Only send back the refined text, no extra content.
+
+${output}".to_string(),
         },
         LLMPrompt {
             id: "professional_email".to_string(),
             name: "Professional Email".to_string(),
-            prompt: "You are a professional corporate communications expert.\n\nInstructions:\n1. Rewrite the input into a polished, professional email.\n2. Use a polite and respectful tone.\n3. Ensure clarity and conciseness.\n4. CRITICAL: Return ONLY the email body. Do NOT include subject lines unless obvious, and NO conversational filler.\n\nInput Text:\n\"\"\"\n${output}\n\"\"\"".to_string(),
-        },
-        LLMPrompt {
-            id: "bullet_points".to_string(),
-            name: "Bullet Points".to_string(),
-            prompt: "You are a summarization expert.\n\nInstructions:\n1. Convert the input text into a concise list of bullet points.\n2. Capture key facts, action items, and decisions.\n3. Remove fluff and repetition.\n4. CRITICAL: Return ONLY the bulleted list.\n\nInput Text:\n\"\"\"\n${output}\n\"\"\"".to_string(),
-        },
-        LLMPrompt {
-            id: "social_media_post".to_string(),
-            name: "Social Media Post".to_string(),
-            prompt: "You are a social media manager.\n\nInstructions:\n1. Rewrite the text as an engaging social media post (Twitter/LinkedIn style).\n2. Use emojis sparingly but effectively.\n3. Add 2-3 relevant hashtags at the end.\n4. Keep it punchy and under 280 characters if possible, or break into a thread if long.\n5. CRITICAL: Return ONLY the post text.\n\nInput Text:\n\"\"\"\n${output}\n\"\"\"".to_string(),
-        },
-        LLMPrompt {
-            id: "meeting_minutes".to_string(),
-            name: "Meeting Minutes".to_string(),
-            prompt: "You are a professional scribe.\n\nInstructions:\n1. Format the input text into structured meeting minutes.\n2. Sections: Summary, Action Items, Key Decisions.\n3. Be strictly factual.\n4. CRITICAL: Return ONLY the formatted minutes.\n\nInput Text:\n\"\"\"\n${output}\n\"\"\"".to_string(),
-        },
-        LLMPrompt {
-            id: "eli5".to_string(),
-            name: "Explain Like I'm 5".to_string(),
-            prompt: "You are a teacher for young students.\n\nInstructions:\n1. Rewrite the input text using simple language and analogies.\n2. Aim for a reading level of an 8-10 year old.\n3. Do not be condescending, just clear.\n4. CRITICAL: Return ONLY the explanation.\n\nInput Text:\n\"\"\"\n${output}\n\"\"\"".to_string(),
-        },
-        LLMPrompt {
-            id: "code_expert".to_string(),
-            name: "Code Expert".to_string(),
-            prompt: "You are a senior software engineer.\n\nInstructions:\n1. Interpret the input as a coding voice memo.\n2. If it describes code, write the code snippet.\n3. If it asks a technical question, answer it concisely.\n4. Fix any technical terminology that was likely transcribed incorrectly (e.g., 'sequel' -> 'SQL').\n5. CRITICAL: Return markdown formatted code or technical text ONLY.\n\nInput Text:\n\"\"\"\n${output}\n\"\"\"".to_string(),
-        },
-        LLMPrompt {
-            id: "strict_proofread".to_string(),
-            name: "Strict Proofread".to_string(),
-            prompt: "You are a strict proofreader.\n\nInstructions:\n1. Fix ONLY spelling, grammar, and punctuation errors.\n2. Do NOT change the tone, style, or word choice unless grammatically incorrect.\n3. Preserve the original voice exactly.\n4. CRITICAL: Return ONLY the corrected text.\n\nInput Text:\n\"\"\"\n${output}\n\"\"\"".to_string(),
+            prompt: "Rewrite this transcribed text into a polished, professional email. Use a polite and respectful tone with clear, concise language. Only send back the email body, no extra content.
+
+${output}".to_string(),
         },
     ]
 }
@@ -586,14 +564,44 @@ fn ensure_post_process_defaults(settings: &mut AppSettings) -> bool {
         }
     }
 
-    // Ensure default prompts exist
-    for prompt in default_post_process_prompts() {
-        if settings
+    // Sync prompts: replace with defaults entirely to ensure consistency
+    // This removes deprecated prompts and updates existing ones
+    let default_prompts = default_post_process_prompts();
+    let default_prompt_ids: Vec<String> = default_prompts.iter().map(|p| p.id.clone()).collect();
+
+    // Remove prompts that are not in the default list
+    let original_count = settings.post_process_prompts.len();
+    settings
+        .post_process_prompts
+        .retain(|p| default_prompt_ids.contains(&p.id));
+    if settings.post_process_prompts.len() != original_count {
+        changed = true;
+    }
+
+    // Add/update default prompts
+    for default_prompt in default_prompts {
+        if let Some(existing) = settings
             .post_process_prompts
-            .iter()
-            .all(|existing| existing.id != prompt.id)
+            .iter_mut()
+            .find(|p| p.id == default_prompt.id)
         {
-            settings.post_process_prompts.push(prompt);
+            // Update existing prompt to match default
+            if existing.name != default_prompt.name || existing.prompt != default_prompt.prompt {
+                existing.name = default_prompt.name.clone();
+                existing.prompt = default_prompt.prompt.clone();
+                changed = true;
+            }
+        } else {
+            // Add missing default prompt
+            settings.post_process_prompts.push(default_prompt);
+            changed = true;
+        }
+    }
+
+    // If selected prompt is no longer valid, reset to first default
+    if let Some(ref selected_id) = settings.post_process_selected_prompt_id {
+        if !default_prompt_ids.contains(selected_id) {
+            settings.post_process_selected_prompt_id = None;
             changed = true;
         }
     }

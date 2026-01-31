@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import { Toaster } from "sonner";
 import "./App.css";
 import AccessibilityPermissions from "./components/AccessibilityPermissions";
@@ -31,9 +31,42 @@ function App() {
     (state) => state.refreshOutputDevices,
   );
   const hasCompletedPostOnboardingInit = useRef(false);
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const lastWindowHeight = useRef<number>(window.innerHeight);
 
   useEffect(() => {
     checkOnboardingStatus();
+  }, []);
+
+  // Handle window resize (including fullscreen transitions) to prevent scroll lock
+  useEffect(() => {
+    const handleResize = () => {
+      const currentHeight = window.innerHeight;
+      const heightDiff = Math.abs(currentHeight - lastWindowHeight.current);
+
+      // If height changed significantly (likely fullscreen toggle), reset scroll
+      if (heightDiff > 100 && scrollContainerRef.current) {
+        // Request animation frame to ensure DOM has updated
+        requestAnimationFrame(() => {
+          if (scrollContainerRef.current) {
+            // Force a reflow to recalculate scroll bounds
+            const scrollEl = scrollContainerRef.current;
+            const currentScrollTop = scrollEl.scrollTop;
+            const maxScrollTop = scrollEl.scrollHeight - scrollEl.clientHeight;
+
+            // If scroll position is invalid (beyond max), reset to valid position
+            if (currentScrollTop > maxScrollTop && maxScrollTop >= 0) {
+              scrollEl.scrollTop = maxScrollTop;
+            }
+          }
+        });
+      }
+
+      lastWindowHeight.current = currentHeight;
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
   }, []);
 
   // Initialize Enigo and refresh audio devices when main app loads
@@ -113,7 +146,7 @@ function App() {
   }
 
   return (
-    <div className="h-screen flex flex-col select-none cursor-default">
+    <div className="h-screen w-screen flex flex-col select-none cursor-default overflow-hidden">
       <Toaster
         theme="system"
         toastOptions={{
@@ -126,22 +159,25 @@ function App() {
           },
         }}
       />
-      {/* Main content area that takes remaining space */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* Main content area: Grid layout for Sidebar + Scrollable Content */}
+      <div className="flex-1 grid grid-cols-[160px_1fr] grid-rows-[1fr] min-h-0 overflow-hidden">
         <Sidebar
           activeSection={currentSection}
           onSectionChange={setCurrentSection}
         />
+
         {/* Scrollable content area */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto">
-            <div className="flex flex-col items-center p-4 gap-4">
-              <AccessibilityPermissions />
-              {renderSettingsContent(currentSection)}
-            </div>
+        <div
+          ref={scrollContainerRef}
+          className="overflow-y-auto h-full w-full relative scroll-container"
+        >
+          <div className="flex flex-col items-center p-4 gap-4 min-h-full">
+            <AccessibilityPermissions />
+            {renderSettingsContent(currentSection)}
           </div>
         </div>
       </div>
+
       {/* Fixed footer at bottom */}
       <Footer />
     </div>

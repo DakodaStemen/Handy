@@ -33,6 +33,24 @@
   /* Apply colors */
   color: var(--color-text);
   background-color: var(--color-background);
+
+  /* Prevent window scroll and rubber-banding */
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Ensure proper scroll recalculation during window resize/fullscreen */
+.scroll-container {
+  contain: layout style;
+  will-change: scroll-position;
+  overscroll-behavior: contain;
 }
 
 .container {

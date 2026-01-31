@@ -78,6 +78,9 @@ export const usePostProcessProviderState = (): PostProcessProviderState => {
       .sort((a, b) => {
         if (a.value === "custom") return 1;
         if (b.value === "custom") return -1;
+        // Gemini first
+        if (a.value === "gemini") return -1;
+        if (b.value === "gemini") return 1;
         // Optionally put Apple Intelligence first
         if (a.value === APPLE_PROVIDER_ID) return -1;
         if (b.value === APPLE_PROVIDER_ID) return 1;

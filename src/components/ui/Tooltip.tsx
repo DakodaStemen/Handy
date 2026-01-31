@@ -21,6 +21,34 @@ const VIEWPORT_PADDING = 12;
 const GAP = 8;
 const ARROW_MARGIN = 12;
 const DEFAULT_HEIGHT = 60;
+const THROTTLE_MS = 16; // ~60fps
+
+// Throttle function to limit update frequency and prevent UI lock during rapid events
+const throttle = <T extends (...args: unknown[]) => void>(
+  fn: T,
+  delay: number,
+): T => {
+  let lastCall = 0;
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
+  return ((...args: unknown[]) => {
+    const now = Date.now();
+
+    if (now - lastCall >= delay) {
+      lastCall = now;
+      fn(...args);
+    } else if (!timeoutId) {
+      timeoutId = setTimeout(
+        () => {
+          timeoutId = null;
+          lastCall = Date.now();
+          fn(...args);
+        },
+        delay - (now - lastCall),
+      );
+    }
+  }) as T;
+};
 
 export const Tooltip: React.FC<TooltipProps> = ({
   targetRef,
@@ -76,14 +104,18 @@ export const Tooltip: React.FC<TooltipProps> = ({
   }, [targetRef, position]);
 
   useEffect(() => {
+    // Initial position update (unthrottled for immediate positioning)
     updatePosition();
 
-    window.addEventListener("scroll", updatePosition, true);
-    window.addEventListener("resize", updatePosition);
+    // Create throttled version for scroll/resize events
+    const throttledUpdate = throttle(updatePosition, THROTTLE_MS);
+
+    window.addEventListener("scroll", throttledUpdate, true);
+    window.addEventListener("resize", throttledUpdate);
 
     return () => {
-      window.removeEventListener("scroll", updatePosition, true);
-      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", throttledUpdate, true);
+      window.removeEventListener("resize", throttledUpdate);
     };
   }, [updatePosition]);
 

@@ -36,65 +36,63 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
   const state = usePostProcessProviderState();
 
   return (
-    <div className="space-y-2">
+    <>
       <PostProcessingToggle descriptionMode="tooltip" grouped={true} />
 
       {state.enabled && (
-        <>
-          {/* Provider & Base URL in a row */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <div className="flex flex-col gap-1">
-              <label className="text-xs font-semibold flex items-center gap-1">
-                {t("settings.postProcessing.api.provider.title")}
-              </label>
-              <ProviderSelect
-                options={state.providerOptions}
-                value={state.selectedProviderId}
-                onChange={state.handleProviderSelect}
-              />
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 px-4 pb-4">
+          {/* Provider */}
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs font-semibold flex items-center gap-1">
+              {t("settings.postProcessing.api.provider.title")}
+            </label>
+            <ProviderSelect
+              options={state.providerOptions}
+              value={state.selectedProviderId}
+              onChange={state.handleProviderSelect}
+            />
+          </div>
 
-            {!state.isAppleProvider && state.selectedProvider?.allow_base_url_edit && (
-              <div className="flex flex-col gap-1">
+          {/* Base URL */}
+          {!state.isAppleProvider &&
+            state.selectedProvider?.allow_base_url_edit && (
+              <div className="flex flex-col gap-1.5">
                 <label className="text-xs font-semibold">
                   {t("settings.postProcessing.api.baseUrl.title")}
                 </label>
                 <BaseUrlField
                   value={state.baseUrl}
                   onBlur={state.handleBaseUrlChange}
-                  placeholder={t("settings.postProcessing.api.baseUrl.placeholder")}
+                  placeholder={t(
+                    "settings.postProcessing.api.baseUrl.placeholder",
+                  )}
                   disabled={state.isBaseUrlUpdating}
                   className="w-full"
                 />
               </div>
             )}
-          </div>
 
-          {state.isAppleProvider && state.appleIntelligenceUnavailable && (
-            <Alert variant="error" contained>
-              {t("settings.postProcessing.api.appleIntelligence.unavailable")}
-            </Alert>
-          )}
-
-          {/* API Key - only if needed */}
+          {/* API Key */}
           {!state.isAppleProvider && !state.isKeylessProvider && (
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5">
               <label className="text-xs font-semibold">
                 {t("settings.postProcessing.api.apiKey.title")}
               </label>
               <ApiKeyField
                 value={state.apiKey}
                 onBlur={state.handleApiKeyChange}
-                placeholder={t("settings.postProcessing.api.apiKey.placeholder")}
+                placeholder={t(
+                  "settings.postProcessing.api.apiKey.placeholder",
+                )}
                 disabled={state.isApiKeyUpdating}
                 className="w-full"
               />
             </div>
           )}
 
-          {/* Model selector - compact row */}
+          {/* Model */}
           {!state.isAppleProvider && (
-            <div className="flex flex-col gap-1">
+            <div className="flex flex-col gap-1.5 sm:col-span-2">
               <label className="text-xs font-semibold">
                 {t("settings.postProcessing.api.model.title")}
               </label>
@@ -106,19 +104,25 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
                   isLoading={state.isFetchingModels}
                   placeholder={
                     state.modelOptions.length > 0
-                      ? t("settings.postProcessing.api.model.placeholderWithOptions")
-                      : t("settings.postProcessing.api.model.placeholderNoOptions")
+                      ? t(
+                          "settings.postProcessing.api.model.placeholderWithOptions",
+                        )
+                      : t(
+                          "settings.postProcessing.api.model.placeholderNoOptions",
+                        )
                   }
                   onSelect={state.handleModelSelect}
                   onCreate={state.handleModelCreate}
-                  onBlur={() => { }}
+                  onBlur={() => {}}
                   className="flex-1"
                 />
                 <ResetButton
                   onClick={state.handleRefreshModels}
                   disabled={state.isFetchingModels}
-                  ariaLabel={t("settings.postProcessing.api.model.refreshModels")}
-                  className="flex h-8 w-8 items-center justify-center"
+                  ariaLabel={t(
+                    "settings.postProcessing.api.model.refreshModels",
+                  )}
+                  className="flex h-9 w-9 items-center justify-center border-mid-gray/20"
                 >
                   <RefreshCcw
                     className={`h-4 w-4 ${state.isFetchingModels ? "animate-spin" : ""}`}
@@ -127,9 +131,18 @@ const PostProcessingSettingsApiComponent: React.FC = () => {
               </div>
             </div>
           )}
-        </>
+
+          {/* Apple Intelligence Alert */}
+          {state.isAppleProvider && state.appleIntelligenceUnavailable && (
+            <div className="sm:col-span-2">
+              <Alert variant="error" contained>
+                {t("settings.postProcessing.api.appleIntelligence.unavailable")}
+              </Alert>
+            </div>
+          )}
+        </div>
       )}
-    </div>
+    </>
   );
 };
 
@@ -168,7 +181,7 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
     if (!promptId) return;
     updateSetting("post_process_selected_prompt_id", promptId);
     setIsCreating(false);
-    const promptName = prompts.find(p => p.id === promptId)?.name;
+    const promptName = prompts.find((p) => p.id === promptId)?.name;
     if (promptName) {
       toast.success(`Active Prompt: ${promptName}`);
     }
@@ -291,8 +304,6 @@ const PostProcessingSettingsPromptsComponent: React.FC = () => {
 
         {!isCreating && hasPrompts && selectedPrompt && (
           <div className="space-y-2">
-
-
             <div className="flex flex-col gap-1">
               <label className="text-xs font-semibold">
                 {t("settings.postProcessing.prompts.promptInstructions")}
@@ -564,7 +575,9 @@ const PostProcessingTestComponent: React.FC = () => {
               className="text-xs px-2 py-0.5 rounded bg-mid-gray/10 hover:bg-mid-gray/20 transition-colors text-mid-gray"
               aria-label="Copy output to clipboard"
             >
-              {copied ? t("settings.postProcessing.test.copied") : t("settings.postProcessing.test.copy")}
+              {copied
+                ? t("settings.postProcessing.test.copied")
+                : t("settings.postProcessing.test.copy")}
             </button>
           )}
         </div>
@@ -579,11 +592,14 @@ const PostProcessingTestComponent: React.FC = () => {
             <div className="flex items-center justify-center h-full gap-2">
               <div className="w-5 h-5 border-2 border-mid-gray/20 border-t-pink-500 rounded-full animate-spin" />
               <span className="text-mid-gray text-xs">
-                {t("settings.postProcessing.test.running")} {formatTime(elapsedTime)}
+                {t("settings.postProcessing.test.running")}{" "}
+                {formatTime(elapsedTime)}
               </span>
             </div>
           ) : outputText ? (
-            <span className="text-neutral-800 dark:text-neutral-200">{outputText}</span>
+            <span className="text-neutral-800 dark:text-neutral-200">
+              {outputText}
+            </span>
           ) : (
             <span className="text-mid-gray/60 italic text-xs">
               {t("settings.postProcessing.test.noOutput")}
@@ -613,18 +629,16 @@ const PostProcessingTestComponent: React.FC = () => {
         </Button>
 
         {isRunning && (
-          <Button
-            onClick={handleCancel}
-            variant="secondary"
-            size="sm"
-          >
+          <Button onClick={handleCancel} variant="secondary" size="sm">
             {t("settings.postProcessing.test.cancel")}
           </Button>
         )}
 
         {!isRunning && elapsedTime > 0 && outputText && (
           <span className="text-xs text-mid-gray">
-            {t("settings.postProcessing.test.completedIn", { time: formatTime(elapsedTime) })}
+            {t("settings.postProcessing.test.completedIn", {
+              time: formatTime(elapsedTime),
+            })}
           </span>
         )}
       </div>
@@ -658,4 +672,3 @@ export const PostProcessingSettings: React.FC = () => {
     </div>
   );
 };
-
