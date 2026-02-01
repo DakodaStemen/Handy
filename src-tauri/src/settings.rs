@@ -507,7 +507,7 @@ fn default_post_process_prompts() -> Vec<LLMPrompt> {
         LLMPrompt {
             id: "beautiful_prompts".to_string(),
             name: "Beautiful Prompts".to_string(),
-            prompt: "Refine this transcribed text into a clear, professional, and well-structured prompt for an AI image generator or LLM. Remove filler words and stutters while preserving the core functional intent. Only send back the refined text, no extra content.
+            prompt: "Refine this transcribed text into a clear, professional, and well-structured prompt for an LLM. Remove filler words and stutters while preserving the core functional intent. Only send back the refined text, no extra content.
 
 ${output}".to_string(),
         },
@@ -564,34 +564,16 @@ fn ensure_post_process_defaults(settings: &mut AppSettings) -> bool {
         }
     }
 
-    // Sync prompts: replace with defaults entirely to ensure consistency
-    // This removes deprecated prompts and updates existing ones
+    // Sync prompts: Ensure defaults exist but don't overwrite user changes or delete custom prompts
     let default_prompts = default_post_process_prompts();
-    let default_prompt_ids: Vec<String> = default_prompts.iter().map(|p| p.id.clone()).collect();
 
-    // Remove prompts that are not in the default list
-    let original_count = settings.post_process_prompts.len();
-    settings
-        .post_process_prompts
-        .retain(|p| default_prompt_ids.contains(&p.id));
-    if settings.post_process_prompts.len() != original_count {
-        changed = true;
-    }
-
-    // Add/update default prompts
+    // Add missing default prompts
     for default_prompt in default_prompts {
-        if let Some(existing) = settings
+        if !settings
             .post_process_prompts
-            .iter_mut()
-            .find(|p| p.id == default_prompt.id)
+            .iter()
+            .any(|p| p.id == default_prompt.id)
         {
-            // Update existing prompt to match default
-            if existing.name != default_prompt.name || existing.prompt != default_prompt.prompt {
-                existing.name = default_prompt.name.clone();
-                existing.prompt = default_prompt.prompt.clone();
-                changed = true;
-            }
-        } else {
             // Add missing default prompt
             settings.post_process_prompts.push(default_prompt);
             changed = true;
@@ -599,8 +581,13 @@ fn ensure_post_process_defaults(settings: &mut AppSettings) -> bool {
     }
 
     // If selected prompt is no longer valid, reset to first default
+    // If selected prompt is no longer valid (deleted), reset selection
     if let Some(ref selected_id) = settings.post_process_selected_prompt_id {
-        if !default_prompt_ids.contains(selected_id) {
+        if !settings
+            .post_process_prompts
+            .iter()
+            .any(|p| p.id == *selected_id)
+        {
             settings.post_process_selected_prompt_id = None;
             changed = true;
         }

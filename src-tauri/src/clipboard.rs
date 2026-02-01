@@ -1,7 +1,7 @@
 use crate::input::{self, EnigoState};
 use crate::settings::{get_settings, ClipboardHandling, PasteMethod};
 use enigo::Enigo;
-use log::info;
+use log::{info, warn};
 use tauri::{AppHandle, Manager};
 use tauri_plugin_clipboard_manager::ClipboardExt;
 
@@ -61,14 +61,27 @@ fn try_send_key_combo_linux(paste_method: &PasteMethod) -> Result<bool, String> 
     if is_wayland() {
         // Wayland: prefer wtype, then dotool, then ydotool
         if is_wtype_available() {
-            info!("Using wtype for key combo");
-            send_key_combo_via_wtype(paste_method)?;
-            return Ok(true);
+            info!("Attempting wtype for key combo");
+            match send_key_combo_via_wtype(paste_method) {
+                Ok(_) => return Ok(true),
+                Err(e) => {
+                    warn!(
+                        "wtype available but failed (likely incompatible compositor): {}",
+                        e
+                    );
+                    // Fallthrough to next tool
+                }
+            }
         }
         if is_dotool_available() {
-            info!("Using dotool for key combo");
-            send_key_combo_via_dotool(paste_method)?;
-            return Ok(true);
+            info!("Attempting dotool for key combo");
+            match send_key_combo_via_dotool(paste_method) {
+                Ok(_) => return Ok(true),
+                Err(e) => {
+                    warn!("dotool available but failed: {}", e);
+                    // Fallthrough to next tool
+                }
+            }
         }
         if is_ydotool_available() {
             info!("Using ydotool for key combo");
@@ -99,14 +112,27 @@ fn try_direct_typing_linux(text: &str) -> Result<bool, String> {
     if is_wayland() {
         // Wayland: prefer wtype, then dotool, then ydotool
         if is_wtype_available() {
-            info!("Using wtype for direct text input");
-            type_text_via_wtype(text)?;
-            return Ok(true);
+            info!("Attempting wtype for direct text input");
+            match type_text_via_wtype(text) {
+                Ok(_) => return Ok(true),
+                Err(e) => {
+                    warn!(
+                        "wtype available but failed (likely incompatible compositor): {}",
+                        e
+                    );
+                    // Fallthrough to next tool
+                }
+            }
         }
         if is_dotool_available() {
-            info!("Using dotool for direct text input");
-            type_text_via_dotool(text)?;
-            return Ok(true);
+            info!("Attempting dotool for direct text input");
+            match type_text_via_dotool(text) {
+                Ok(_) => return Ok(true),
+                Err(e) => {
+                    warn!("dotool available but failed: {}", e);
+                    // Fallthrough
+                }
+            }
         }
         if is_ydotool_available() {
             info!("Using ydotool for direct text input");

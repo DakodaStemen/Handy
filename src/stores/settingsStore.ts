@@ -268,6 +268,7 @@ export const useSettingsStore = create<SettingsStore>()(
         if (settings) {
           set({ settings: { ...settings, [key]: originalValue } });
         }
+        throw error;
       } finally {
         setUpdating(updateKey, false);
       }
