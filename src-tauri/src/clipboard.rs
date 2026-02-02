@@ -21,9 +21,45 @@ fn paste_via_clipboard(
     let clipboard_content = clipboard.read_text().unwrap_or_default();
 
     // Write text to clipboard first
-    clipboard
-        .write_text(text)
-        .map_err(|e| format!("Failed to write to clipboard: {}", e))?;
+    if let Err(e) = clipboard.write_text(text) {
+        warn!(
+            "Native clipboard write failed: {}. Trying wl-copy/xclip fallback...",
+            e
+        );
+
+        #[cfg(target_os = "linux")]
+        {
+            use std::io::Write;
+            use std::process::{Command, Stdio};
+
+            let result = if is_wayland() {
+                Command::new("wl-copy").stdin(Stdio::piped()).spawn()
+            } else {
+                Command::new("xclip")
+                    .args(["-selection", "clipboard"])
+                    .stdin(Stdio::piped())
+                    .spawn()
+            };
+
+            match result {
+                Ok(mut child) => {
+                    if let Some(mut stdin) = child.stdin.take() {
+                        let _ = stdin.write_all(text.as_bytes());
+                    }
+                    let _ = child.wait();
+                }
+                Err(fallback_err) => {
+                    return Err(format!(
+                        "All clipboard methods failed. Native: {}. Fallback: {}",
+                        e, fallback_err
+                    ));
+                }
+            }
+        }
+
+        #[cfg(not(target_os = "linux"))]
+        return Err(format!("Failed to write to clipboard: {}", e));
+    }
 
     std::thread::sleep(std::time::Duration::from_millis(50));
 
