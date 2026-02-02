@@ -31,6 +31,14 @@ pub fn handle_shortcut_event(
     hotkey_string: &str,
     is_pressed: bool,
 ) {
+    // Log every shortcut event to debug visibility issues
+    log::info!(
+        "Shortcut event received: binding_id='{}', hotkey='{}', pressed={}",
+        binding_id,
+        hotkey_string,
+        is_pressed
+    );
+
     let settings = get_settings(app);
 
     let Some(action) = ACTION_MAP.get(binding_id) else {
