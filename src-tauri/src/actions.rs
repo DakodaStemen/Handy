@@ -384,24 +384,31 @@ impl ShortcutAction for TranscribeAction {
                             });
 
                             // Paste the final text (either processed or original)
-                            let ah_clone = ah.clone();
+                            // 1. Hide the overlay first to initiate focus transfer
+                            let ah_hide = ah.clone();
+                            let _ = ah.run_on_main_thread(move || {
+                                utils::hide_recording_overlay(&ah_hide);
+                                change_tray_icon(&ah_hide, TrayIconState::Idle);
+                            });
+
+                            // 2. Wait for the overlay to fade out and focus to return to the target app.
+                            // The overlay fade-out animation is ~300ms. We wait 400ms to be safe.
+                            std::thread::sleep(std::time::Duration::from_millis(400));
+
+                            // 3. Perform the paste operation
+                            let ah_paste = ah.clone();
                             let paste_time = Instant::now();
                             ah.run_on_main_thread(move || {
-                                match utils::paste(final_text, ah_clone.clone()) {
+                                match utils::paste(final_text, ah_paste) {
                                     Ok(()) => debug!(
                                         "Text pasted successfully in {:?}",
                                         paste_time.elapsed()
                                     ),
                                     Err(e) => error!("Failed to paste transcription: {}", e),
                                 }
-                                // Hide the overlay after transcription is complete
-                                utils::hide_recording_overlay(&ah_clone);
-                                change_tray_icon(&ah_clone, TrayIconState::Idle);
                             })
                             .unwrap_or_else(|e| {
                                 error!("Failed to run paste on main thread: {:?}", e);
-                                utils::hide_recording_overlay(&ah);
-                                change_tray_icon(&ah, TrayIconState::Idle);
                             });
                         } else {
                             utils::hide_recording_overlay(&ah);

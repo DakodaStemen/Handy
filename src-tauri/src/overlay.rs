@@ -134,35 +134,38 @@ fn calculate_overlay_position(app_handle: &AppHandle) -> Option<(f64, f64)> {
 /// Creates the recording overlay window and keeps it hidden by default
 #[cfg(not(target_os = "macos"))]
 pub fn create_recording_overlay(app_handle: &AppHandle) {
-    if let Some((x, y)) = calculate_overlay_position(app_handle) {
-        match WebviewWindowBuilder::new(
-            app_handle,
-            "recording_overlay",
-            tauri::WebviewUrl::App("src/overlay/index.html".into()),
-        )
-        .title("Recording")
-        .position(x, y)
-        .resizable(false)
-        .inner_size(OVERLAY_WIDTH, OVERLAY_HEIGHT)
-        .shadow(false)
-        .maximizable(false)
-        .minimizable(false)
-        .closable(false)
-        .accept_first_mouse(true)
-        .decorations(false)
-        .always_on_top(true)
-        .skip_taskbar(true)
-        .transparent(true)
-        .focused(false)
-        .visible(false)
-        .build()
-        {
-            Ok(_window) => {
-                debug!("Recording overlay window created successfully (hidden)");
-            }
-            Err(e) => {
-                debug!("Failed to create recording overlay window: {}", e);
-            }
+    let (x, y) = calculate_overlay_position(app_handle).unwrap_or_else(|| {
+        log::warn!("Could not calculate initial overlay position (cursor not found?). Defaulting to (0,0).");
+        (0.0, 0.0)
+    });
+
+    match WebviewWindowBuilder::new(
+        app_handle,
+        "recording_overlay",
+        tauri::WebviewUrl::App("src/overlay/index.html".into()),
+    )
+    .title("Recording")
+    .position(x, y)
+    .resizable(false)
+    .inner_size(OVERLAY_WIDTH, OVERLAY_HEIGHT)
+    .shadow(false)
+    .maximizable(false)
+    .minimizable(false)
+    .closable(false)
+    .accept_first_mouse(true)
+    .decorations(false)
+    .always_on_top(true)
+    .skip_taskbar(true)
+    .transparent(true)
+    .focused(false)
+    .visible(false)
+    .build()
+    {
+        Ok(_window) => {
+            debug!("Recording overlay window created successfully (hidden)");
+        }
+        Err(e) => {
+            debug!("Failed to create recording overlay window: {}", e);
         }
     }
 }
